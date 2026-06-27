@@ -89,3 +89,56 @@ def reset():
     engine.dead_nodes.clear()
     engine._build_graph()
     return {"status": "reset"}
+
+
+@app.post("/config")
+def load_config(req: dict):
+    import json
+    engine.config = req
+    engine.planets = {}
+    planets_list = req.get("nodes") or req.get("planets") or []
+    for p in planets_list:
+        pid = p["id"]
+        normalized = p.copy()
+        if "coordinates" not in normalized:
+            normalized["coordinates"] = {
+                "x": float(p.get("x", 0.0)),
+                "y": float(p.get("y", 0.0)),
+                "z": float(p.get("z", 0.0))
+            }
+        normalized["name"] = p.get("name", pid)
+        normalized["radius"] = float(p.get("radius") or p.get("radius_km") or 0.0)
+        normalized["towers"] = int(p.get("towers") or p.get("active_towers") or 0)
+        normalized["atmosphere"] = float(p.get("atmosphere") or p.get("atmosphere_thickness_km") or 0.0)
+        normalized["refraction"] = float(p.get("refraction") or p.get("refraction_index") or 1.0)
+        engine.planets[pid] = normalized
+        
+    engine.links = req.get("links", [])
+    engine.dead_nodes.clear()
+    
+    # Resolve metadata parameters
+    engine.meta = req.get("universe_metadata", {})
+    engine.C = float(engine.meta.get("speed_of_light_kms", 300000.0))
+    engine.f = float(engine.meta.get("fiber_speed_fraction", 0.67))
+    engine.delta_t = float(engine.meta.get("tower_processing_delay_ms", 7.0))
+    engine.max_void_hop = float(engine.meta.get("max_void_hop_distance_km", 50000000.0))
+    
+    # Detect S coordinate scale
+    if "coordinate_scale_unit_km" in engine.meta:
+        engine.S = float(engine.meta["coordinate_scale_unit_km"])
+    else:
+        max_coord = 0.0
+        for p in engine.planets.values():
+            coords = p.get("coordinates", {})
+            max_coord = max(max_coord, abs(coords.get("x", 0)), abs(coords.get("y", 0)))
+        engine.S = 1.0 if max_coord > 10000 else 100000.0
+        
+    engine._build_graph()
+    
+    try:
+        with open("universe-config.json", "w") as f:
+            json.dump(req, f, indent=2)
+    except Exception:
+        pass
+        
+    return {"status": "success", "planets": len(engine.planets)}

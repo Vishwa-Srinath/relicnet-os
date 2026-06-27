@@ -314,6 +314,8 @@ class RelicNetEngine:
                 "atmosphere_km": self._atmosphere_thickness_km(planet),
                 "refraction": self._refraction_index(planet),
                 "encoded_payload": self.encode_message(payload, planet.get("codex", 10)),
+                "entry_tower": hop_edges[i-1]["entry_tower"] if i > 0 else None,
+                "exit_tower": hop_edges[i]["exit_tower"] if i < len(path) - 1 else None,
             }
             
             if i < len(path) - 1:

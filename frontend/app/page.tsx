@@ -21,7 +21,9 @@ type Hop = {
   index: number; node: string; name: string; codex_base: number;
   radius_km: number; towers: number; atmosphere_km: number; refraction: number;
   encoded_payload: { ascii: string; binary: string; base: number; encoded: string; steps: { label: string; value: string }[] };
-  next_link?: { to: string; latency_ms: number; breakdown_ms: Record<string, number> };
+  entry_tower?: number | null;
+  exit_tower?: number | null;
+  next_link?: { to: string; latency_ms: number; breakdown_ms: Record<string, number>; exit_tower: number; entry_tower: number };
 };
 type RouteResult = {
   origin: string; destination: string; path: string[];
@@ -62,6 +64,54 @@ function Inspector({ hop, onClose }: { hop: Hop; onClose: () => void }) {
           </div>
         </div>
 
+        {/* Core Physical Variables */}
+        <div className="space-y-1 bg-cyan-950/20 p-2.5 rounded border border-cyan-900/30">
+          <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider mb-2">▸ Physical Parameters</div>
+          {hop.next_link ? (
+            <>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Void Distance (L):</span>
+                <span className="text-slate-200 font-mono">{(hop.next_link.breakdown_ms.void * 300).toLocaleString(undefined, {maximumFractionDigits: 0})} km</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Void Travel Time (Tv):</span>
+                <span className="text-slate-200 font-mono">{(hop.next_link.breakdown_ms.void + hop.next_link.breakdown_ms.atmosphere_origin + hop.next_link.breakdown_ms.atmosphere_dest).toFixed(2)} ms</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Internal Transit (Tp):</span>
+                <span className="text-slate-200 font-mono">{(hop.next_link.breakdown_ms.fiber_origin + hop.next_link.breakdown_ms.tower_origin).toFixed(2)} ms</span>
+              </div>
+              {hop.entry_tower !== undefined && hop.entry_tower !== null && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Entry Tower (current):</span>
+                  <span className="text-amber-400 font-bold font-mono">Tower {hop.entry_tower}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-slate-400">Exit Tower (current):</span>
+                <span className="text-amber-400 font-bold font-mono">Tower {hop.exit_tower}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Entry Tower (next):</span>
+                <span className="text-amber-400 font-bold font-mono">Tower {hop.next_link.entry_tower}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Internal Transit (Tp):</span>
+                <span className="text-slate-200 font-mono">7.00 ms (Destination Arrival)</span>
+              </div>
+              {hop.entry_tower !== undefined && hop.entry_tower !== null && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Entry Tower (current):</span>
+                  <span className="text-amber-400 font-bold font-mono">Tower {hop.entry_tower}</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
         <div>
           <div className="text-slate-500 uppercase tracking-wider mb-1">Codex Transform</div>
           {hop.encoded_payload.steps.map((s, i) => (
@@ -75,7 +125,7 @@ function Inspector({ hop, onClose }: { hop: Hop; onClose: () => void }) {
         {hop.next_link && (
           <div>
             <div className="text-slate-500 uppercase tracking-wider mb-1">Outbound Link → {hop.next_link.to}</div>
-            <div className="text-emerald-400 text-base mb-1">{hop.next_link.latency_ms.toFixed(2)} ms</div>
+            <div className="text-emerald-400 text-base mb-1">Link Latency: {hop.next_link.latency_ms.toFixed(2)} ms</div>
             <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-slate-400">
               {Object.entries(hop.next_link.breakdown_ms).map(([k, v]) => (
                 <div key={k}>{k}: <span className="text-slate-200">{Number(v).toFixed(2)}</span></div>
@@ -96,6 +146,7 @@ export default function MissionControl() {
   const [dest, setDest] = useState("");
   const [payload, setPayload] = useState("Hello");
   const [route, setRoute] = useState<RouteResult | null>(null);
+  const [routeError, setRouteError] = useState<string | null>(null);
   const [inspect, setInspect] = useState<Hop | null>(null);
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
@@ -194,20 +245,27 @@ export default function MissionControl() {
 
   const sendPacket = async () => {
     if (!origin || !dest || origin === dest) { pushLog("✖ pick origin ≠ destination"); return; }
-    setBusy(true); setInspect(null);
+    setBusy(true); setInspect(null); setRouteError(null);
     pushLog(`► routing ${origin} → ${dest}`);
     try {
       const r = await fetch(`${API}/route`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ origin, destination: dest, payload }),
       });
-      if (!r.ok) { pushLog(`✖ ${r.status} no route`); setRoute(null); return; }
+      if (!r.ok) {
+        pushLog(`✖ ${r.status} no route`);
+        setRoute(null);
+        setRouteError(`${origin} to ${dest} is unreachable. Nodes are physically isolated (distance exceeds maximum hop range of 50M km).`);
+        return;
+      }
       const data: RouteResult = await r.json();
       setRoute(data);
+      setRouteError(null);
       pushLog(`✓ ${data.hop_count} hops · ${data.total_latency_ms.toFixed(1)} ms`);
     } catch (e) {
       pushLog(`✖ network/server error`);
       setRoute(null);
+      setRouteError("Network error occurred while communicating with Sector telemetry service.");
     } finally { setBusy(false); }
   };
 
@@ -228,6 +286,32 @@ export default function MissionControl() {
     await fetch(`${API}/reset`, { method: "POST" });
     pushLog("✓ all nodes restored");
     await loadUniverse();
+  };
+
+  const handleConfigUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    pushLog(`📁 Loading custom configuration: ${file.name}`);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const r = await fetch(`${API}/config`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed),
+      });
+      if (!r.ok) {
+        pushLog(`✖ Configuration upload failed: ${r.statusText}`);
+        return;
+      }
+      pushLog(`✓ Configuration uploaded successfully!`);
+      setRoute(null);
+      setRouteError(null);
+      setOrigin("");
+      setDest("");
+      await loadUniverse();
+    } catch (err: any) {
+      pushLog(`✖ Failed to parse configuration: ${err.message}`);
+    }
   };
 
   const onNodeClick = (_: any, n: Node) => {
@@ -330,6 +414,16 @@ export default function MissionControl() {
           </div>
         </div>
 
+        {/* Load Configuration */}
+        <div className="p-4 border-b border-cyan-900/40 space-y-2">
+          <div className="text-[10px] text-cyan-500 tracking-widest">▸ LOAD CONFIGURATION</div>
+          <label className="flex flex-col items-center justify-center border border-dashed border-cyan-800/40 hover:border-cyan-500/60 rounded p-4 cursor-pointer hover:bg-cyan-950/10 transition-colors">
+            <span className="text-[10px] text-slate-400 font-bold">↑ UPLOAD UNIVERSE FILE</span>
+            <span className="text-[9px] text-slate-500 mt-0.5">Select a universe-config.json file</span>
+            <input type="file" accept=".json" onChange={handleConfigUpload} className="hidden" />
+          </label>
+        </div>
+
         {/* Route result */}
         <AnimatePresence>
         {route && (
@@ -339,6 +433,14 @@ export default function MissionControl() {
             <div className="text-2xl text-emerald-400 mt-1 font-bold">{route.total_latency_ms.toFixed(2)} ms</div>
             <div className="text-[10px] text-slate-400 mt-0.5">{route.hop_count} hops · click planet for details</div>
             <div className="mt-2 text-xs text-amber-300 break-all">{route.path.join(" → ")}</div>
+          </motion.div>
+        )}
+        {routeError && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            className="p-4 border-b border-red-900/40 bg-red-950/20 overflow-hidden">
+            <div className="text-[10px] text-red-500 tracking-widest font-bold">☠ ROUTE UNAVAILABLE</div>
+            <div className="text-sm text-red-400 mt-1 font-bold">ISOLATED NODE DETECTED</div>
+            <div className="text-[10px] text-slate-400 mt-1 leading-snug">{routeError}</div>
           </motion.div>
         )}
         </AnimatePresence>
