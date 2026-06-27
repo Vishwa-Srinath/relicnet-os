@@ -2,14 +2,7 @@
 
 RelicNet OS is a high-performance interplanetary packet-routing simulator and visual dashboard for space network topologies. It calculates optimal communication paths across star systems using a custom sequence-dependent physical latency model and a **State-Expanded Dijkstra** routing engine.
 
----
 
-## 🚀 Live Demo
-*   **Web Dashboard:** [http://localhost:3000](http://localhost:3000)
-*   **Engine API:** [http://localhost:8000](http://localhost:8000)
-*   **API Reference Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
 
 ## 🪐 Mathematical Physics Model
 
