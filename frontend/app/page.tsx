@@ -205,6 +205,9 @@ export default function MissionControl() {
       const data: RouteResult = await r.json();
       setRoute(data);
       pushLog(`✓ ${data.hop_count} hops · ${data.total_latency_ms.toFixed(1)} ms`);
+    } catch (e) {
+      pushLog(`✖ network/server error`);
+      setRoute(null);
     } finally { setBusy(false); }
   };
 
