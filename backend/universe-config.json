@@ -1,6 +1,6 @@
 {
   "universe_metadata": {
-    "system_name": "Zeta-26",
+    "system_name": "Omega-9",
     "speed_of_light_kms": 300000,
     "max_void_hop_distance_km": 50000000,
     "coordinate_scale_unit_km": 100000,
@@ -9,64 +9,64 @@
   },
   "nodes": [
     {
-      "id": "Aegis",
-      "codex": 8,
+      "id": "Prime",
+      "codex": 1,
       "x": 0,
       "y": 0,
-      "radius_km": 6371,
+      "radius_km": 6000,
       "active_towers": 8,
-      "atmosphere_thickness_km": 120,
-      "refraction_index": 1.0003
+      "atmosphere_thickness_km": 100,
+      "refraction_index": 1.0005
     },
     {
-      "id": "Boreas",
-      "codex": 5,
+      "id": "Nexus",
+      "codex": 2,
       "x": 150,
-      "y": 100,
-      "radius_km": 3389,
+      "y": 0,
+      "radius_km": 3000,
       "active_towers": 4,
-      "atmosphere_thickness_km": 85,
-      "refraction_index": 1.052
+      "atmosphere_thickness_km": 50,
+      "refraction_index": 1.01
     },
     {
-      "id": "Dawn",
-      "codex": 6,
-      "x": 350,
-      "y": 50,
-      "radius_km": 1500,
+      "id": "Garrison",
+      "codex": 3,
+      "x": 250,
+      "y": 150,
+      "radius_km": 12000,
+      "active_towers": 16,
+      "atmosphere_thickness_km": 2000,
+      "refraction_index": 1.45
+    },
+    {
+      "id": "Terminus",
+      "codex": 4,
+      "x": -300,
+      "y": 200,
+      "radius_km": 4500,
       "active_towers": 6,
-      "atmosphere_thickness_km": 30,
-      "refraction_index": 1.011
-    },
-    {
-      "id": "Elysium",
-      "codex": 10,
-      "x": 300,
-      "y": 350,
-      "radius_km": 6051,
-      "active_towers": 12,
-      "atmosphere_thickness_km": 250,
-      "refraction_index": 1.185
-    },
-    {
-      "id": "Fenix",
-      "codex": 16,
-      "x": 500,
-      "y": -100,
-      "radius_km": 1200,
-      "active_towers": 4,
-      "atmosphere_thickness_km": 15,
+      "atmosphere_thickness_km": 80,
       "refraction_index": 1.005
     },
     {
-      "id": "Caelum",
-      "codex": 14,
-      "x": 650,
-      "y": 200,
-      "radius_km": 58232,
-      "active_towers": 16,
-      "atmosphere_thickness_km": 500,
-      "refraction_index": 1.321
+      "id": "Outpost",
+      "codex": 5,
+      "x": 1000,
+      "y": 1000,
+      "radius_km": 2000,
+      "active_towers": 3,
+      "atmosphere_thickness_km": 10,
+      "refraction_index": 1
+    },
+    {
+      "id": "Relay",
+      "codex": 6,
+      "x": -100,
+      "y": -200,
+      "radius_km": 1500,
+      "active_towers": 2,
+      "atmosphere_thickness_km": 5,
+      "refraction_index": 1.001
     }
   ]
 }
