@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    container_name: relicnet-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./universe-config.json:/app/universe-config.json:ro
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: relicnet-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
