@@ -10,7 +10,25 @@ class RelicNetEngine:
     def __init__(self, config_path: str = "universe-config.json"):
         with open(config_path) as f:
             self.config = json.load(f)
-        self.planets = {p["id"]: p for p in self.config["planets"]}
+            
+        planets_list = self.config.get("nodes") or self.config.get("planets") or []
+        self.planets = {}
+        for p in planets_list:
+            pid = p["id"]
+            normalized = p.copy()
+            if "coordinates" not in normalized:
+                normalized["coordinates"] = {
+                    "x": float(p.get("x", 0.0)),
+                    "y": float(p.get("y", 0.0)),
+                    "z": float(p.get("z", 0.0))
+                }
+            normalized["name"] = p.get("name", pid)
+            normalized["radius"] = float(p.get("radius") or p.get("radius_km") or 0.0)
+            normalized["towers"] = int(p.get("towers") or p.get("active_towers") or 0)
+            normalized["atmosphere"] = float(p.get("atmosphere") or p.get("atmosphere_thickness_km") or 0.0)
+            normalized["refraction"] = float(p.get("refraction") or p.get("refraction_index") or 1.0)
+            self.planets[pid] = normalized
+            
         self.links   = self.config.get("links", [])
         self.dead_nodes: set[str] = set()
         self.graph = nx.Graph()
@@ -309,10 +327,16 @@ class RelicNetEngine:
                 
                 # Fiber portion of Tp calculation
                 N_towers = self._towers(self.planets[node])
-                cw = (edge_info["exit_tower"] - edge_info["entry_tower"]) % N_towers if N_towers > 0 else 0
-                ccw = (edge_info["entry_tower"] - edge_info["exit_tower"]) % N_towers if N_towers > 0 else 0
-                s = min(cw, ccw)
-                m = s + 1 if s > 0 else 1
+                if i == 0:
+                    s = 0
+                    m = 1
+                else:
+                    entry_tower = hop_edges[i-1]["entry_tower"]
+                    exit_tower = edge_info["exit_tower"]
+                    cw = (exit_tower - entry_tower) % N_towers if N_towers > 0 else 0
+                    ccw = (entry_tower - exit_tower) % N_towers if N_towers > 0 else 0
+                    s = min(cw, ccw)
+                    m = s + 1 if s > 0 else 1
                 tower_part = m * self.delta_t
                 fiber_part = max(0.0, edge_info["Tp_from_ms"] - tower_part)
                 
