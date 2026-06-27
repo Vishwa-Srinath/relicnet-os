@@ -232,11 +232,21 @@ export default function MissionControl() {
         label: `${e.latency_ms < 1000 ? e.latency_ms.toFixed(1) : (e.latency_ms / 1000).toFixed(1) + "k"} ms`,
         animated: onPath,
         style: {
-          stroke: onPath ? "#fbbf24" : "#1e293b",
-          strokeWidth: onPath ? 3 : 1,
-          opacity: onPath ? 1 : 0.35,
+          stroke: onPath ? "#fbbf24" : "#475569", // Amber for active path, lighter Slate for background links
+          strokeWidth: onPath ? 4 : 2,            // Thicker lines (4px path, 2px default)
+          opacity: onPath ? 1 : 0.55,            // More visible default links
         },
-        markerEnd: { type: MarkerType.ArrowClosed, color: onPath ? "#fbbf24" : "#334155" },
+        labelStyle: {
+          fill: onPath ? "#fbbf24" : "#cbd5e1",   // Bright white/amber text labels
+          fontWeight: 700,
+          fontSize: 10,
+        },
+        labelBgStyle: {
+          fill: "#030712",                       // Deep dark label background container
+          fillOpacity: 0.9,
+        },
+        labelBgPadding: [6, 3],
+        markerEnd: { type: MarkerType.ArrowClosed, color: onPath ? "#fbbf24" : "#475569" },
       };
     });
 
