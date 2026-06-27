@@ -1,13 +1,72 @@
 {
-  "name": "ZETA-26 Network",
-  "planets": [
-    { "id": "P1", "name": "Aetheria",  "codex": 2,  "radius": 6371,  "towers": 4, "atmosphere": 100, "refraction": 1.0003, "coordinates": { "x": 0,        "y": 0,        "z": 0 } },
-    { "id": "P2", "name": "Borealis",  "codex": 8,  "radius": 3389,  "towers": 2, "atmosphere":  25, "refraction": 1.0001, "coordinates": { "x": 78000000, "y": 12000000, "z": -3000000 } },
-    { "id": "P3", "name": "Cygnus",    "codex": 16, "radius": 12104, "towers": 6, "atmosphere":  90, "refraction": 1.0010, "coordinates": { "x": 41000000, "y": -22000000,"z": 5000000 } },
-    { "id": "P4", "name": "Draconis",  "codex": 10, "radius": 69911, "towers": 9, "atmosphere": 5000,"refraction": 1.0050, "coordinates": { "x":-628000000,"y": 18000000, "z": 9000000 } },
-    { "id": "P5", "name": "Eldoria",   "codex": 4,  "radius": 1737,  "towers": 1, "atmosphere":   0, "refraction": 1.0000, "coordinates": { "x": 384400,   "y": 0,        "z": 0 } },
-    { "id": "P6", "name": "Fornax",    "codex": 32, "radius": 24622, "towers": 7, "atmosphere": 2000,"refraction": 1.0030, "coordinates": { "x":-4500000000,"y":140000000, "z": -20000000 } },
-    { "id": "P7", "name": "Galadrim",  "codex": 6,  "radius": 2440,  "towers": 3, "atmosphere":   5, "refraction": 1.0001, "coordinates": { "x": 57900000, "y": 8000000,  "z": 1000000 } }
-  ],
-  "links": []
+  "universe_metadata": {
+    "system_name": "Zeta-26",
+    "speed_of_light_kms": 300000.0,
+    "max_void_hop_distance_km": 50000000.0,
+    "coordinate_scale_unit_km": 100000.0,
+    "tower_processing_delay_ms": 7.0,
+    "fiber_speed_fraction": 0.67
+  },
+  "nodes": [
+    {
+      "id": "Aegis",
+      "codex": 8,
+      "x": 0.0,
+      "y": 0.0,
+      "radius_km": 6371.0,
+      "active_towers": 8,
+      "atmosphere_thickness_km": 120.0,
+      "refraction_index": 1.0003
+    },
+    {
+      "id": "Boreas",
+      "codex": 5,
+      "x": 150.0,
+      "y": 100.0,
+      "radius_km": 3389.0,
+      "active_towers": 4,
+      "atmosphere_thickness_km": 85.0,
+      "refraction_index": 1.0520
+    },
+    {
+      "id": "Dawn",
+      "codex": 6,
+      "x": 350.0,
+      "y": 50.0,
+      "radius_km": 1500.0,
+      "active_towers": 6,
+      "atmosphere_thickness_km": 30.0,
+      "refraction_index": 1.0110
+    },
+    {
+      "id": "Elysium",
+      "codex": 10,
+      "x": 300.0,
+      "y": 350.0,
+      "radius_km": 6051.0,
+      "active_towers": 12,
+      "atmosphere_thickness_km": 250.0,
+      "refraction_index": 1.1850
+    },
+    {
+      "id": "Fenix",
+      "codex": 16,
+      "x": 500.0,
+      "y": -100.0,
+      "radius_km": 1200.0,
+      "active_towers": 4,
+      "atmosphere_thickness_km": 15.0,
+      "refraction_index": 1.0050
+    },
+    {
+      "id": "Caelum",
+      "codex": 14,
+      "x": 650.0,
+      "y": 200.0,
+      "radius_km": 58232.0,
+      "active_towers": 16,
+      "atmosphere_thickness_km": 500.0,
+      "refraction_index": 1.3210
+    }
+  ]
 }
